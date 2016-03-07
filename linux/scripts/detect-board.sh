@@ -3,7 +3,7 @@
 # This code will try to automatically detect known motor/power boards and configure the correctly tailored command for them*/
 
 canTalkToATMEGAviaSPI(){
-    avrdude -P /dev/spidev1.0 -c linuxspi -vv -p m2560 > /dev/null 2>&1
+    avrdude -P /dev/spidev0.0 -c linuxspi -vv -p m2560 > /dev/null 2>&1
     if [ $? -ne 0 ] 
     then
         return 1
