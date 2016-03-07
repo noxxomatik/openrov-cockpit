@@ -10,29 +10,44 @@
 //To eliminate hard coding paths for require, we are modifying the NODE_PATH to include
 //out lib folder
 var oldpath = '';
+
 if (process.env['NODE_PATH']!==undefined){
   oldpath = process.env['NODE_PATH'];
 }
- //just in case already been set leave it alone
-  process.env['NODE_PATH']=__dirname+'/lib:'+oldpath;
-  require('module').Module._initPaths();
-  console.log("Set NODE_PATH to: "+process.env['NODE_PATH'] );
+
+// Just in case already been set leave it alone
+process.env['NODE_PATH']=__dirname+'/lib:'+oldpath;
+require('module').Module._initPaths();
+console.log("Set NODE_PATH to: "+process.env['NODE_PATH'] );
 
 
-var CONFIG = require('./lib/config'), fs = require('fs'), express = require('express'), app = express(), server = require('http').createServer(app), io = require('socket.io').listen(server, { log: false, origins: '*:*' }), EventEmitter = require('events').EventEmitter, OpenROVCamera = require(CONFIG.OpenROVCamera), OpenROVController = require(CONFIG.OpenROVController), logger = require('./lib/logger').create(CONFIG), mkdirp = require('mkdirp'), path = require('path');
-var PluginLoader = require('./lib/PluginLoader');
-var CockpitMessaging = require('./lib/CockpitMessaging');
-var Q=require('q');
+var CONFIG 				= require('./lib/config');
+var fs 					= require('fs');
+var express 			= require('express');
+var app 				= express();
+var server 				= require('http').createServer(app);
+var io 					= require('socket.io').listen(server, { log: false, origins: '*:*' });
+var EventEmitter 		= require('events').EventEmitter;
+var OpenROVCamera 		= require(CONFIG.OpenROVCamera);
+var OpenROVController 	= require(CONFIG.OpenROVController);
+var logger 				= require('./lib/logger').create(CONFIG);
+var mkdirp 				= require('mkdirp');
+var path 				= require('path');
+var PluginLoader 		= require('./lib/PluginLoader');
+var CockpitMessaging 	= require('./lib/CockpitMessaging');
+var Q					= require('q');
+
 require('systemd');
 
-var serveIndex = require('serve-index');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var methodOverride = require('method-override');
-var session = require('express-session');
-var bodyParser = require('body-parser');
-var multer = require('multer');
-var errorHandler = require('errorhandler');
+var serveIndex 			= require('serve-index');
+var favicon 			= require('serve-favicon');
+var logger 				= require('morgan');
+var methodOverride 		= require('method-override');
+var session 			= require('express-session');
+var bodyParser 			= require('body-parser');
+var multer 				= require('multer');
+var errorHandler 		= require('errorhandler');
+
 app.use(express.static(__dirname + '/static/'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,18 +65,26 @@ app.use('/components', express.static(path.join(__dirname, 'static/webcomponents
 app.use('/components', express.static(path.join(__dirname,'plugins/telemetry/public/bower_components')));
 app.use('/components/telemetry', express.static(path.join(__dirname,'plugins/telemetry/public/webcomponents')));
 app.use('/components/telemetry', serveIndex(path.join(__dirname,'plugins/telemetry/public/webcomponents')));
+
 console.log("!!!"+ path.join(__dirname, 'src/static/bower_components'));
+
 // Keep track of plugins js and css to load them in the view
-var scripts = [], styles = [];
+var scripts = [];
+var styles = [];
+
 // setup required directories
 mkdirp(CONFIG.preferences.get('photoDirectory'));
 process.env.NODE_ENV = true;
+
 var globalEventLoop = new EventEmitter();
+
 var DELAY = Math.round(1000 / CONFIG.video_frame_rate);
 var camera = new OpenROVCamera({ delay: DELAY, app: app });
+
 io= require('./static/js/socketIOStoreAndForward.js')(io);
 var client = new CockpitMessaging(io);
 client = require('./static/js/eventEmitterStoreAndForward.js')(client);
+
 var controller = new OpenROVController(globalEventLoop, client);
 
 // Prepare dependency map for plugins
@@ -80,6 +103,7 @@ app.get('/config.js', function (req, res) {
   res.type('application/javascript');
   res.send('var CONFIG = ' + JSON.stringify(CONFIG));
 });
+
 app.get('/', function (req, res) {
   var viewname = CONFIG.preferences.get("plugins:ui-manager").selectedUI;
   viewname = viewname === undefined ? "new-ui" : viewname;
@@ -92,6 +116,7 @@ app.get('/', function (req, res) {
     config: CONFIG
   });
 });
+
 //socket.io cross domain access
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -100,20 +125,32 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
   next();
 });
+
 var connections = 0;
 // SOCKET connection ==============================
 connections += 1;
+
+/*
+
+// Cockpit events
 if (connections == 1)
+{
   controller.start();
+}
+
 // opens socket with client
-if (camera.IsCapturing) {
+if (camera.IsCapturing) 
+{
   deps.cockpit.emit('videoStarted');
   console.log('Send videoStarted to client 2');
-} else {
+} 
+else 
+{
   console.log('Trying to restart mjpeg streamer');
   camera.capture();
   deps.cockpit.emit('videoStarted');
 }
+
 deps.cockpit.on('videoStatus', function(clk) {
   clk(camera.IsCapturing);
 });
@@ -130,12 +167,18 @@ deps.cockpit.on('update_settings', function (value) {
     controller.requestSettings();
   }, 1000);
 });
+
 deps.cockpit.on('disconnect', function () {
   connections -= 1;
   console.log('disconnect detected');
   if (connections === 0)
     controller.stop();
 });
+*/
+
+/*
+
+// Controller events
 controller.on('rovsys', function (data) {
   deps.cockpit.emit('rovsys', data);
 });
@@ -147,6 +190,10 @@ controller.on('settings-updated', function (settings) {
   deps.cockpit.emit('settings', settings);
 //  console.log('sending settings to web client');
 });
+
+*/
+
+// Global event loop
 globalEventLoop.on('videoStarted', function () {
   deps.cockpit.emit('videoStarted');
   console.log('sent videoStarted to client');
@@ -155,6 +202,7 @@ globalEventLoop.on('videoStopped', function () {
   deps.cockpit.emit('videoStopped');
 });
 
+// Camera events
 camera.on('started', function () {
   console.log('emitted \'videoStarted\'');
   globalEventLoop.emit('videoStarted');
@@ -170,6 +218,8 @@ camera.on('error.device', function (err) {
   console.log('camera emitted an error:', err);
   globalEventLoop.emit('videoStopped');
 });
+
+// Handle sigterm
 if (process.platform === 'linux') {
   process.on('SIGTERM', function () {
     console.error('got SIGTERM, shutting down...');
@@ -201,35 +251,13 @@ function addPluginAssets(result) {
     deps.loadedPlugins=deps.loadedPlugins.concat(result.plugins);
   }
 }
+
+// PLUGINSSSSS
 var loader = new PluginLoader();
 
 /*Order does matter in the script loading below*/
 var sysscripts = [];
 
-/*
-var sysscripts = ["bogus",
-          "js/libs/eventemitter2.js",
-           "bower_components/jquery/dist/jquery.min.js",
-           "bower_components/jquery-ui//jquery-ui.min.js",
-           "js/libs/bootstrap.min.js",
-           "js/libs/mousetrap.min.js",
-           'bower_components/knockoutjs/dist/knockout.js',
-           "bower_components/knockout.validation/Dist/knockout.validation.js",
-           'js/knockout-extentions.js',
-           'js/libs/db.js',
-           "js/libs/IndexedDBShim.min.js",
-           "config.js",
-           "socket.io/socket.io.js",
-           'js/libs/gamepad.js',
-           'js/utilities.js',
-           'js/message-manager.js',
-    //       'js/ui-loader.js',
-           "js/cockpit.js",
-           'js/app.js'
-         ];
-*/
-//
-//            "bower_components/webcomponentsjs/webcomponents.min.js",
 mkdirp.sync('/usr/share/cockpit/bower_components');
 
 var funcs = [
@@ -272,8 +300,19 @@ Q.allSettled(funcs).then(function(results){
 //    console.log(error);
 //    throw error;
 })
+// PLUGINSSSSS
 
+console.log( "Starting controller..." );
+
+/*
+
+// Start the controller
 controller.start();
+
+*/
+
+console.log( "Starting webserver..." );
+
 // Start the web server
 server.listen(app.get('port'), function () {
   console.log('Started listening on port: ' + app.get('port'));
