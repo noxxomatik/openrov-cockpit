@@ -1,0 +1,111 @@
+<!-- Reworked to bring in image and style changes from Joakim's simple theme -->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="mobile-compass">
+	<style type="text/css">
+	
+		:host
+		{
+			width:100%;
+			height:100%;
+		}
+	
+		#compass
+		{
+			display:block;
+			height: 100%;
+			width: 100%;
+			background-color: rgba(0,0,0,0.4);
+			border-radius: 50%;
+			
+		}
+		
+		#needle
+		{
+			background:url(img/needle.png) no-repeat;
+			height: 100%;
+			width: 100%;
+    		background-size: contain;
+			-webkit-transition: 100ms ease-in-out;
+			-moz-transition: 100ms ease-in-out;
+			-o-transition: 100ms ease-in-out;
+			transition: 100ms ease-in-out;
+		}
+		
+		#readout
+		{
+			display: block;
+			width:100%;
+			color:white;
+			text-align: center
+		}
+	</style>
+	
+	<template>
+		<div id="compass">
+			<div id="needle"></div>
+		</div>
+		
+		<!-- <div id="readout"></div> -->
+	
+	</template>
+	
+	
+	<script>
+		( function () 
+		{
+			Polymer(
+			{
+				is: 'mobile-compass',
+				
+				behaviors: [namespace('behaviors').oROVStandard],
+				
+				registerEmitterHanlders: function(emitter)
+				{
+					var self = this;
+					emitter.on('plugin.navigationData.data',function(data)
+					{
+						self.moveTo(data.heading);
+					});
+				},
+				
+				moveTo: function (degrees)
+				{
+					var aR;
+					this.heading = this.heading || 0;
+					
+					// if rot undefined or 0, make 0, else rot
+					aR = this.heading % 360;
+					
+					if (aR < 0) 
+					{
+						aR += 360;
+					}
+					
+					if (aR < 180 && degrees > aR + 180) 
+					{
+						this.heading -= 360;
+					}
+					
+					if (aR >= 180 && degrees <= aR - 180) 
+					{
+						this.heading += 360;
+					}
+					
+					this.heading += degrees - aR;
+					var cp = $(this.$.needle);
+					
+					cp.css(
+					{
+						'transform': 'rotate(' + this.heading + 'deg)',
+						'-ms-transform': 'rotate(' + this.heading + 'deg)',
+						'-webkit-transform': 'rotate(' + this.heading + 'deg)'
+					} );
+					
+					this.set('$.readout.innerText', degrees);
+				}
+			});
+		}());
+	</script>
+</dom-module>

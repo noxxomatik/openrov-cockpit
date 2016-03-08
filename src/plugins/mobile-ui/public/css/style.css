@@ -1,0 +1,30 @@
+body 
+{
+	height: 100%;
+	overflow: hidden; /* keeps scrollbar off IE */
+	padding: 0px;
+	margin: 0px;
+}
+
+#UI
+{
+	background-color: black;
+	width: 100%;
+	height: 100vh;
+}
+
+orov-video
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+mobile-controls
+{
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
