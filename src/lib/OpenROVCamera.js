@@ -52,11 +52,11 @@ var OpenROVCamera = function (options) {
   var capture;
   capture = function (callback) {
     logger.log('initiating camera on', options.device);
-    logger.log('ensure beagle is at 100% cpu for this camera');
+    /*logger.log('ensure beagle is at 100% cpu for this camera');
     spawn('cpufreq-set', [
       '-g',
       'performance'
-    ]);
+    ]);*/
     // if camera working, should be at options.device (most likely /dev/video0 or similar)
     fs.exists(options.device, function (exists) {
       // no camera?!

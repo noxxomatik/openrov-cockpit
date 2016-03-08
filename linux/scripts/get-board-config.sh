@@ -11,10 +11,10 @@ export ROV_BOARD=`cat /var/run/rov_board`
 # Trident
 if test "$ROV_BOARD" = "trident"
 then
-	export UPLOAD_SCRIPT=/opt/openrov/firmware/scripts/rpi/samd21/upload.sh
-	export BUILD_SCRIPT=/opt/openrov/firmware/scripts/rpi/samd21/build.sh
-	export BOOTLOADER_SCRIPT=/opt/openrov/firmware/scripts/rpi/samd21/flash_bootloader.sh
-	export ESC_SCRIPT=/opt/openrov/firmware/scripts/samd21/rpi/flash_escs.sh
+	export UPLOAD_SCRIPT=/opt/openrov/firmware/trident/rpi/upload.sh
+	export BUILD_SCRIPT=/opt/openrov/firmware/scripts/trident/rpi/build.sh
+	export BOOTLOADER_SCRIPT=/opt/openrov/firmware/scripts/trident/rpi/flash_bootloader.sh
+	export ESC_SCRIPT=/opt/openrov/firmware/scripts/trident/rpi/flash_escs.sh
 	export MCU_RESET_PIN=18
 	export UPLOAD_REQUIRES_RESET=false
 	export UPLOAD_REQUIRES_PROG_PIN=false

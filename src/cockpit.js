@@ -23,18 +23,18 @@ console.log("Set NODE_PATH to: "+process.env['NODE_PATH'] );
 
 var CONFIG 				= require('./lib/config');
 var fs 					= require('fs');
-var express 			= require('express');
+var express 				= require('express');
 var app 				= express();
 var server 				= require('http').createServer(app);
 var io 					= require('socket.io').listen(server, { log: false, origins: '*:*' });
-var EventEmitter 		= require('events').EventEmitter;
-var OpenROVCamera 		= require(CONFIG.OpenROVCamera);
-var OpenROVController 	= require(CONFIG.OpenROVController);
+var EventEmitter 			= require('events').EventEmitter;
+var OpenROVCamera 			= require(CONFIG.OpenROVCamera);
+var OpenROVController 			= require(CONFIG.OpenROVController);
 var logger 				= require('./lib/logger').create(CONFIG);
 var mkdirp 				= require('mkdirp');
 var path 				= require('path');
-var PluginLoader 		= require('./lib/PluginLoader');
-var CockpitMessaging 	= require('./lib/CockpitMessaging');
+var PluginLoader 			= require('./lib/PluginLoader');
+var CockpitMessaging 			= require('./lib/CockpitMessaging');
 var Q					= require('q');
 
 require('systemd');
@@ -72,6 +72,8 @@ console.log("!!!"+ path.join(__dirname, 'src/static/bower_components'));
 var scripts = [];
 var styles = [];
 
+
+
 // setup required directories
 mkdirp(CONFIG.preferences.get('photoDirectory'));
 process.env.NODE_ENV = true;
@@ -85,7 +87,9 @@ io= require('./static/js/socketIOStoreAndForward.js')(io);
 var client = new CockpitMessaging(io);
 client = require('./static/js/eventEmitterStoreAndForward.js')(client);
 
+
 var controller = new OpenROVController(globalEventLoop, client);
+
 
 // Prepare dependency map for plugins
 var deps = {
@@ -130,13 +134,15 @@ var connections = 0;
 // SOCKET connection ==============================
 connections += 1;
 
-/*
+
 
 // Cockpit events
 if (connections == 1)
 {
   controller.start();
 }
+
+
 
 // opens socket with client
 if (camera.IsCapturing) 
@@ -155,6 +161,8 @@ deps.cockpit.on('videoStatus', function(clk) {
   clk(camera.IsCapturing);
 });
 
+
+
 deps.cockpit.emit('settings', CONFIG.preferences.get());
 
 deps.cockpit.on('update_settings', function (value) {
@@ -168,15 +176,17 @@ deps.cockpit.on('update_settings', function (value) {
   }, 1000);
 });
 
+
+
 deps.cockpit.on('disconnect', function () {
   connections -= 1;
   console.log('disconnect detected');
   if (connections === 0)
     controller.stop();
 });
-*/
 
-/*
+
+
 
 // Controller events
 controller.on('rovsys', function (data) {
@@ -191,8 +201,6 @@ controller.on('settings-updated', function (settings) {
 //  console.log('sending settings to web client');
 });
 
-*/
-
 // Global event loop
 globalEventLoop.on('videoStarted', function () {
   deps.cockpit.emit('videoStarted');
@@ -202,11 +210,15 @@ globalEventLoop.on('videoStopped', function () {
   deps.cockpit.emit('videoStopped');
 });
 
+
+
 // Camera events
 camera.on('started', function () {
   console.log('emitted \'videoStarted\'');
   globalEventLoop.emit('videoStarted');
 });
+
+
 camera.capture(function (err) {
   if (err) {
     connections -= 1;
@@ -214,6 +226,8 @@ camera.capture(function (err) {
     return console.error('couldn\'t initialize camera. got:', err);
   }
 });
+
+
 camera.on('error.device', function (err) {
   console.log('camera emitted an error:', err);
   globalEventLoop.emit('videoStopped');
@@ -232,6 +246,8 @@ if (process.platform === 'linux') {
     process.exit(0);
   });
 }
+
+
 
 // Load the plugins
 function addPluginAssets(result) {
@@ -255,8 +271,12 @@ function addPluginAssets(result) {
 // PLUGINSSSSS
 var loader = new PluginLoader();
 
+
+
 /*Order does matter in the script loading below*/
 var sysscripts = [];
+
+
 
 mkdirp.sync('/usr/share/cockpit/bower_components');
 
@@ -302,14 +322,16 @@ Q.allSettled(funcs).then(function(results){
 })
 // PLUGINSSSSS
 
+
+
 console.log( "Starting controller..." );
 
-/*
+
 
 // Start the controller
 controller.start();
 
-*/
+
 
 console.log( "Starting webserver..." );
 
