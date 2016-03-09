@@ -1,0 +1,62 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<link rel="import" href="../grid-menu/grid-menu.html">
+<link rel="import" href="../grid-menu/grid-menu-button.html">
+
+<dom-module id="app-menu">
+	
+	<style type="text/css">
+		:host
+		{
+			position: absolute;
+			top: 0;
+			left: 0;
+			margin-top: 10px;
+			margin-left: 10px;
+		}
+		
+	</style>
+	
+	<template>
+		
+		<grid-menu trigger-icon="apps">			
+			<grid-menu-button toggles target="map.html" icon="maps:place" label="Map"></grid-menu-button>
+			<grid-menu-button toggles icon="notification:wifi" label="Network"></grid-menu-button>
+			<grid-menu-button toggles icon="icons:visibility" label="VR"></grid-menu-button>
+			<grid-menu-button toggles icon="notification:system-update" label="Update"></grid-menu-button>
+			<grid-menu-button toggles icon="social:group" label="Social"></grid-menu-button>
+			<grid-menu-button toggles icon="image:photo-library" label="Gallery"></grid-menu-button>
+			<grid-menu-button toggles icon="icons:extension" label="Plugins"></grid-menu-button>
+			<grid-menu-button toggles icon="icons:settings" label="Settings"></grid-menu-button>
+			<grid-menu-button toggles icon="device:airplanemode-active" label="Cockpit"></grid-menu-button>
+		</grid-menu>
+		
+	</template>
+	
+	
+	<script>
+		( function()
+		{
+			Polymer(
+			{
+				is: 'app-menu',
+				
+				listeners:
+				{
+					'menuSelection': 'handleMenuSelection'
+				},
+				
+				handleMenuSelection: function(e)
+				{ 
+					console.log( e.detail.target );
+				},
+				
+				handleTap: function(e)
+				{
+					console.log( document.activeElement );
+				}
+			} );
+		}() );
+		
+	</script>
+</dom-module>

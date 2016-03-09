@@ -1,0 +1,103 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<link rel="import" href="../grid-menu/grid-menu.html">
+<link rel="import" href="../grid-menu/grid-menu-button.html">
+
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../orov-thrusters2x1-motortest.html">
+
+<dom-module id="settings-menu">
+	
+	<style type="text/css">
+		:host
+		{
+			position: absolute;
+			top: 0;
+			right: 0px;
+			margin-top: 10px;
+			margin-right: 10px;
+		}
+		
+		paper-dialog
+		{
+			color: white;
+			position: fixed;
+			
+			top: 0px;
+			right: 0;
+			margin-top: 90px;
+			margin-right: 10px;
+			width: 20%;
+
+			overflow: auto;
+			border-radius: 5px;
+			background-color: rgba( 00, 00, 00, 0.7 );
+    	}
+		
+		modal ::content > *
+		{
+			margin: 0;
+		}
+		
+		orov-thrusters2x1-motortest
+		{
+			
+			float: right;
+			margin-top: 0px;
+			padding: 0;
+		}
+		
+	</style>
+	
+	<template>
+		
+		<paper-dialog id="modal">
+			<orov-thrusters2x1-motortest></orov-thrusters2x1-motortest>
+		</paper-dialog>
+		
+		<grid-menu id="gridMenu" horizontal-align="right" trigger-icon="settings">			
+				<grid-menu-button target="modal" icon="hardware:toys" label="Motors"></grid-menu-button>
+				<grid-menu-button icon="icons:build" label="Calibrate"></grid-menu-button>
+				<grid-menu-button icon="image:palette" label="Theme"></grid-menu-button>
+				<grid-menu-button icon="hardware:videogame-asset" label="Controls"></grid-menu-button>
+				<grid-menu-button icon="icons:warning" label="Diagnostics"></grid-menu-button>
+				<grid-menu-button icon="image:camera-alt" label="Camera"></grid-menu-button>
+		</grid-menu>
+		
+	</template>
+	
+	
+	<script>
+		( function()
+		{
+			Polymer(
+			{
+				is: 'settings-menu',
+				
+				listeners:
+				{
+					'menuSelection': 'handleMenuSelection'
+				},
+				
+				handleMenuSelection: function(e)
+				{ 
+					var dialog = this.$$( '#' + e.detail.target );
+					
+					if (dialog) 
+					{
+						this.$.gridMenu.fire('cancel');
+						dialog.open();
+					}
+					
+					
+				},
+				
+				handleTap: function(e)
+				{
+					console.log( document.activeElement );
+				}
+			} );
+		}() );
+		
+	</script>
+</dom-module>
