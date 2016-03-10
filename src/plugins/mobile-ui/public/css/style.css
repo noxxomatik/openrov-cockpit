@@ -26,6 +26,14 @@ html, body
     pointer-events:none;
 }
 
+.layer-no-input
+{
+    position: fixed;
+	top: 0;
+	left: 0;
+	pointer-events:none;
+}
+
 .layer > *
 {
 	pointer-events:all;
@@ -74,10 +82,52 @@ html, body
 
 #ui-top
 {
-    display: -webkit-inline-flex; /* Safari */
+    display: -webkit-inline-flex;
     display: inline-flex;
     justify-content: space-between;
     
     width: 100%;
     padding: 10px 10px 0px 10px;
+}
+
+.action-bar 
+{
+	float: left;
+	position: relative;
+	left: 50%;
+}
+
+.action-bar-container
+{
+	float: left;
+	position: relative;
+	left: -50%;
+}
+
+.action-bar-container .battery
+{
+	color: white;
+	background-color: rgba(0,0,0,0.4);
+	border-radius: 0 0 0 5px;
+	vertical-align: top;
+	display: inline-block;
+}
+
+.action-bar-container orov-mobile-compass
+{
+	width: 150px;
+	background-color: rgba(0,0,0,0.4);
+	border-radius: 0 0 25px 25px;
+	vertical-align: top;
+	display: inline-block;
+	margin: 0;
+}
+
+.action-bar-container .depth
+{
+	color: white;
+	background-color: rgba(0,0,0,0.4);
+	border-radius: 0 0 5px 0;
+	vertical-align: top;
+	display: inline-block;
 }
