@@ -67,7 +67,9 @@
 	<link rel="import" href="components/mobile-ui/dual-thumbstick/dual-thumbstick.html">
 	<link rel="import" href="components/mobile-ui/orov-window/orov-window.html">
 	<link rel="import" href="components/mobile-ui/orov-mobile-compass/orov-mobile-compass.html">
-
+	<link rel="import" href="components/mobile-ui/orov-mobile-depth/orov-mobile-depth.html">
+	<link rel="import" href="components/mobile-ui/orov-mobile-battery/orov-mobile-battery.html">
+	
 	<% for( var i = 0; i < scripts.length; i++ ) 
 	{
 		%>  <script type="text/javascript" src="<%= scripts[i] %>"></script><% 
@@ -121,15 +123,13 @@
 					<div class="action-bar">
 						<div class="action-bar-container">
 							<div class="battery">
-								<iron-icon icon="device:battery-charging-full"></iron-icon>
-								<span>11.1V</span>
+								<orov-mobile-battery event-emitter="{{cockpitEventEmitter}}"></orov-mobile-battery>
 							</div>
 							
 							 <orov-mobile-compass class="center" heading="0" event-emitter="{{cockpitEventEmitter}}"></orov-mobile-compass>
 							
 							<div class="depth">
-								<span>11.27m</span>
-								<iron-icon icon="swap-vert"></iron-icon>
+								<orov-mobile-depth event-emitter="{{cockpitEventEmitter}}"></orov-mobile-depth>
 							</div>
 						</div>
 					</div>
