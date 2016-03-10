@@ -61,6 +61,9 @@
 	<link rel="import" href="components/orov-behavior.html">
 	
 	<link rel="import" href="components/video/orov-video.html">
+	
+	<link rel="import" href="components/navigation-data/orov-horizon.html">
+	
 	<link rel="import" href="components/mobile-ui/app-menu/app-menu.html">
 	<link rel="import" href="components/mobile-ui/settings-menu/settings-menu.html">
 	<link rel="import" href="components/mobile-ui/dual-thumbstick/dual-thumbstick.html">
@@ -84,7 +87,8 @@
 				
 				<!-- HUD Layer -->
 				<div id="layer-hud" class="layer fill" style="z-index: 20">
-					
+					<!--Horizon Display-->
+					<!--Depth Display-->
 				</div>
 				
 				<!-- Controls Layer -->
@@ -95,14 +99,14 @@
 				<!-- UI Layer -->
 				<div id="layer-ui" class="layer fill" style="z-index: 40">
 				
-					<!--Menu Buttons-->
-					<div id="ui-top" class="layer" style="" style="z-index: 20">
+					<!--Top-->
+					<div id="ui-top" class="rel-layer" style="" style="z-index: 20">
 						<app-menu></app-menu>
 						<settings-menu></settings-menu>
 					</div>
 					
-					<!--Bottom Section-->
-					<div id="ui-bot" class="layer fill" style="z-index: 10">
+					<!--Bottom-->
+					<div id="ui-bot" class="rel-layer fill" style="z-index: 10">
 						<div id="layer-widgets" class="layer" style="z-index: 0">
 						</div>
 						
@@ -111,14 +115,13 @@
 								yo
 							</orov-window>
 						</div>
-						
 					</div>
 					
+					<!--Absolute widget layer-->
 					<div id="layer-ui-action" class="layer fill" style="z-index: 0">
 						<action-bar></action-bar>
 					</div>
 
-					
 				</div>
 				
 				<!-- Modal Layer -->

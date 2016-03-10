@@ -21,12 +21,37 @@ html, body
 	pointer-events:none;
 }
 
+.rel-layer
+{
+    pointer-events:none;
+}
+
 .layer > *
 {
 	pointer-events:all;
 }
 
+.rel-layer > *
+{
+	pointer-events:all;
+}
+
+.layer > .rel-layer
+{
+	pointer-events:none;
+}
+
 .layer > .layer
+{
+	pointer-events:none;
+}
+
+.rel-layer > .layer
+{
+	pointer-events:none;
+}
+
+.rel-layer > .rel-layer
 {
 	pointer-events:none;
 }
