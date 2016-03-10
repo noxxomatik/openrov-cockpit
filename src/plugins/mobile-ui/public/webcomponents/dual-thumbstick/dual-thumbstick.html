@@ -59,6 +59,10 @@
 				properties: 
 				{
 				},
+				
+				listeners:
+				{
+				},
 		
 				attached: function ()
 				{
@@ -144,6 +148,8 @@
 				
 				onTouchStart: function (e)
 				{
+					e.preventDefault();
+					
 					for( var i = 0; i < e.changedTouches.length; i++ )
 					{
 						var touch = e.changedTouches[i]; 
@@ -177,7 +183,7 @@
 				onTouchMove: function (e)
 				{
 					// Prevent the browser from doing its default thing (scroll, zoom)
-					//e.preventDefault();
+					e.preventDefault();
 	
 					for( var i = 0; i < e.changedTouches.length; i++ )
 					{

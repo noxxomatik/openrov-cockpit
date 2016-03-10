@@ -4,19 +4,10 @@
 <link rel="import" href="../grid-menu/grid-menu-button.html">
 
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
-<link rel="import" href="../orov-thrusters2x1-motortest.html">
 
 <dom-module id="settings-menu">
 	
 	<style type="text/css">
-		:host
-		{
-			position: absolute;
-			top: 0;
-			right: 0px;
-			margin-top: 10px;
-			margin-right: 10px;
-		}
 		
 		paper-dialog
 		{
@@ -50,11 +41,6 @@
 	</style>
 	
 	<template>
-		
-		<paper-dialog id="modal">
-			<orov-thrusters2x1-motortest></orov-thrusters2x1-motortest>
-		</paper-dialog>
-		
 		<grid-menu id="gridMenu" horizontal-align="right" trigger-icon="settings">			
 				<grid-menu-button target="modal" icon="hardware:toys" label="Motors"></grid-menu-button>
 				<grid-menu-button icon="icons:build" label="Calibrate"></grid-menu-button>
@@ -81,12 +67,12 @@
 				
 				handleMenuSelection: function(e)
 				{ 
-					var dialog = this.$$( '#' + e.detail.target );
+					var nonmodalwin = document.getElementById( "non-modal-win" );
 					
 					if (dialog) 
 					{
 						this.$.gridMenu.fire('cancel');
-						dialog.open();
+						nonmodalwin.fire( e.detail.target );
 					}
 					
 					
@@ -94,7 +80,6 @@
 				
 				handleTap: function(e)
 				{
-					console.log( document.activeElement );
 				}
 			} );
 		}() );
