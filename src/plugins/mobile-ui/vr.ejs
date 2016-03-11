@@ -15,6 +15,8 @@
 		<!-- CSS -->
 		<link href="components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="plugin/mobile-ui/css/style.css">
+		
+		 
 	</head>
 
 	<script type='text/javascript' src="js/libs/eventemitter2.js"></script>
@@ -34,6 +36,13 @@
 	<script type="text/javascript" src="js/app.js"></script>
 
 	<script type="text/javascript" src="components/webcomponentsjs/webcomponents-lite.js"></script>
+	
+	<script type="text/javascript" src="plugin/mobile-ui/js/lib/three.min.js"></script>
+	
+	<script type='text/javascript' src="plugin/mobile-ui/js/third-party/threejs/three.js"></script>
+	<script type='text/javascript' src="plugin/mobile-ui/js/third-party/threejs/StereoEffect.js"></script>
+	<script type='text/javascript' src="plugin/mobile-ui/js/third-party/threejs/DeviceOrientationControls.js"></script>
+	<script type='text/javascript' src="plugin/mobile-ui/js/third-party/threejs/OrbitControls.js"></script>
   
 	<script>
 		// Use native shadowdom
@@ -60,65 +69,153 @@
 	<!-- Web components -->
 	<link rel="import" href="components/orov-behavior.html">
 	
-	<link rel="import" href="components/video/orov-video.html">
-	
-	<link rel="import" href="components/mobile-ui/app-menu/app-menu.html">
-	<link rel="import" href="components/mobile-ui/settings-menu/settings-menu.html">
-	<link rel="import" href="components/mobile-ui/dual-thumbstick/dual-thumbstick.html">
-	<link rel="import" href="components/mobile-ui/orov-window/orov-window.html">
-	<link rel="import" href="components/mobile-ui/orov-mobile-compass/orov-mobile-compass.html">
-	<link rel="import" href="components/mobile-ui/orov-mobile-depth/orov-mobile-depth.html">
-	<link rel="import" href="components/mobile-ui/orov-mobile-battery/orov-mobile-battery.html">
-	
 	<% for( var i = 0; i < scripts.length; i++ ) 
 	{
 		%>  <script type="text/javascript" src="<%= scripts[i] %>"></script><% 
 	} 
 	%>
+	
+	<style>
+		      body {
+		        margin: 0px;
+		        overflow: hidden;
+		      }
+		      #example {
+		        position: absolute;
+		        top: 0;
+		        left: 0;
+		        right: 0;
+		        bottom: 0;
+		      }
+	    </style>
 
 	<body>
 		<template id="t" is="dom-bind" strip-whitespace>
+			<div id="example"></div>
 			
-			<!-- UI Layer -->
-			<div id="layer-ui" class="layer fill" style="z-index: 40">
 			
-				<!--Top-->
-				<div id="ui-top" class="rel-layer" style="" style="z-index: 20">
-					<app-menu></app-menu>
-					<settings-menu></settings-menu>
-				</div>
-				
-				<!--Bottom-->
-				<div id="ui-bot" class="rel-layer fill" style="z-index: 10">
-					<div id="layer-widgets" class="layer" style="z-index: 0">
-					</div>
-					
-					<div id="layer-win" class="layer fill" style="z-index: 10">
-						<orov-window id="ui-win">
-							yo
-						</orov-window>
-					</div>
-				</div>
-				
-				<!--Absolute widget layer-->
-				<div id="layer-ui-absolute" class="layer fill" style="z-index: 0">
-					
-					<div class="action-bar">
-						<div class="action-bar-container">
-							<div class="battery">
-								<orov-mobile-battery event-emitter="{{cockpitEventEmitter}}"></orov-mobile-battery>
-							</div>
-							
-							 <orov-mobile-compass class="center" heading="0" event-emitter="{{cockpitEventEmitter}}"></orov-mobile-compass>
-							
-							<div class="depth">
-								<orov-mobile-depth event-emitter="{{cockpitEventEmitter}}"></orov-mobile-depth>
-							</div>
-						</div>
-					</div>
-					
-				</div>
-			</div>
+			
+			<script>
+			var camera, scene, renderer;
+			var effect, controls;
+			var element, container;
+			
+			var clock = new THREE.Clock();
+			
+			init();
+			animate();
+			
+			function init() {
+			  renderer = new THREE.WebGLRenderer();
+			  element = renderer.domElement;
+			  container = document.getElementById('example');
+			  container.appendChild(element);
+			
+			  effect = new THREE.StereoEffect(renderer);
+			
+			  scene = new THREE.Scene();
+			
+			  camera = new THREE.PerspectiveCamera(90, 1, 0.001, 700);
+			  camera.position.set(0, 10, 0);
+			  scene.add(camera);
+			
+			  controls = new THREE.OrbitControls(camera, element);
+			  controls.rotateUp(Math.PI / 4);
+			  controls.target.set(
+			    camera.position.x + 0.1,
+			    camera.position.y,
+			    camera.position.z
+			  );
+			  controls.noZoom = true;
+			  controls.noPan = true;
+			
+			  function setOrientationControls(e) {
+			    if (!e.alpha) {
+			      return;
+			    }
+			
+			    controls = new THREE.DeviceOrientationControls(camera, true);
+			    controls.connect();
+			    controls.update();
+			
+			    element.addEventListener('click', fullscreen, false);
+			
+			    window.removeEventListener('deviceorientation', setOrientationControls, true);
+			  }
+			  window.addEventListener('deviceorientation', setOrientationControls, true);
+			
+			
+			  var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
+			  scene.add(light);
+			
+			  var texture = THREE.ImageUtils.loadTexture(
+			    'plugin/mobile-ui/textures/patterns/checker.png'
+			  );
+			  texture.wrapS = THREE.RepeatWrapping;
+			  texture.wrapT = THREE.RepeatWrapping;
+			  texture.repeat = new THREE.Vector2(50, 50);
+			  texture.anisotropy = renderer.getMaxAnisotropy();
+			
+			  var material = new THREE.MeshPhongMaterial({
+			    color: 0xffffff,
+			    specular: 0xffffff,
+			    shininess: 20,
+			    shading: THREE.FlatShading,
+			    map: texture
+			  });
+			
+			  var geometry = new THREE.PlaneGeometry(1000, 1000);
+			
+			  var mesh = new THREE.Mesh(geometry, material);
+			  mesh.rotation.x = -Math.PI / 2;
+			  scene.add(mesh);
+			
+			  window.addEventListener('resize', resize, false);
+			  setTimeout(resize, 1);
+			}
+			
+			function resize() {
+			  var width = container.offsetWidth;
+			  var height = container.offsetHeight;
+			
+			  camera.aspect = width / height;
+			  camera.updateProjectionMatrix();
+			
+			  renderer.setSize(width, height);
+			  effect.setSize(width, height);
+			}
+			
+			function update(dt) {
+			  resize();
+			
+			  camera.updateProjectionMatrix();
+			
+			  controls.update(dt);
+			}
+			
+			function render(dt) {
+			  effect.render(scene, camera);
+			}
+			
+			function animate(t) {
+			  requestAnimationFrame(animate);
+			
+			  update(clock.getDelta());
+			  render(clock.getDelta());
+			}
+			
+			function fullscreen() {
+			  if (container.requestFullscreen) {
+			    container.requestFullscreen();
+			  } else if (container.msRequestFullscreen) {
+			    container.msRequestFullscreen();
+			  } else if (container.mozRequestFullScreen) {
+			    container.mozRequestFullScreen();
+			  } else if (container.webkitRequestFullscreen) {
+			    container.webkitRequestFullscreen();
+			  }
+			}
+			</script>
 			
 		</template>
 	</body>
