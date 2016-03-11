@@ -47,12 +47,15 @@
 			margin-right: auto;
 			--iron-icon-width: 70%;
 			--iron-icon-height: 70%;
+			--iron-icon-fill-color: var(--grid-menu-button-fill-color);
 		}
 		
 		span
 		{
+			color: var(--grid-menu-button-fill-color);
 			font-size: 100%;
 		}
+
 	</style>
 	
 	
@@ -80,12 +83,26 @@
 			{
 				label: String,
 				inkColor: String,
-				target: String
+				target: String,
+				action: String,
+				selected: 
+				{
+					type: Boolean,
+					reflectToAttribute: true
+				}
 			},
 			
 			handleTap: function(e)
 			{
-				this.fire( 'menuSelection', {target: this.target} );
+				e.preventDefault();
+				
+				this.fire( 'menuSelection', 
+					{
+						action: this.action,
+						target: this.target,
+						label: this.label
+					}
+				);
 			}
 		} );
 	</script>

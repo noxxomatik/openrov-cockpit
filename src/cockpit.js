@@ -71,7 +71,8 @@ console.log("!!!"+ path.join(__dirname, 'src/static/bower_components'));
 // Keep track of plugins js and css to load them in the view
 var scripts = [];
 var styles = [];
-
+/*Order does matter in the script loading below*/
+var sysscripts = [];
 
 
 // setup required directories
@@ -91,6 +92,15 @@ client = require('./static/js/eventEmitterStoreAndForward.js')(client);
 var controller = new OpenROVController(globalEventLoop, client);
 
 
+var pagePathInfo = function()
+{
+  return {
+      scripts: scripts,
+      styles: styles,
+      sysscripts: sysscripts
+  }
+}
+
 // Prepare dependency map for plugins
 var deps = {
   server: server,
@@ -100,7 +110,8 @@ var deps = {
   cockpit: client,
   config: CONFIG,
   globalEventLoop: globalEventLoop,
-  loadedPlugins: []
+  loadedPlugins: [],
+  pathInfo: pagePathInfo
 };
 
 app.get('/config.js', function (req, res) {
@@ -273,8 +284,7 @@ var loader = new PluginLoader();
 
 
 
-/*Order does matter in the script loading below*/
-var sysscripts = [];
+
 
 
 
