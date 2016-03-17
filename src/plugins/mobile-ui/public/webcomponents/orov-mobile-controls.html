@@ -1,26 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="dual-thumbstick.html">
+<link rel="import" href="dual-thumbstick/dual-thumbstick.html">
 
-<dom-module id="mobile-controls">
-	<style type="text/css">
-		:host 
-		{
-			display: block;
-			width: 100%;
-			height: 100%;
-		}
-		
-		canvas
-		{
-			display:block;
-			position:absolute; 
-		}
-		
-		.hidden 
-		{ 
-			display: none 
-		}
-		
+<dom-module id="orov-mobile-controls">
+	<style type="text/css">		
 	</style>
 
 	<template>
@@ -33,7 +15,7 @@
 		{
 			Polymer(
 			{
-				is: 'mobile-controls',
+				is: 'orov-mobile-controls',
 				
 				properties: 
 				{
@@ -52,7 +34,6 @@
 				
 				registerEmitterHanlders: function(emitter)
 				{
-					console.dir( emitter );	
 				},
 				
 				handleThrottle: function(e)
