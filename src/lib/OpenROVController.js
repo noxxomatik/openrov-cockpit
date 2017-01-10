@@ -19,7 +19,22 @@ var navdata = {
     yaw: 0,
     thrust: 0,
     deapth: 0,
-    hdgd: 0
+    hdgd: 0,
+    acclx: 0,
+    accly: 0,
+    acclz: 0,
+    magx: 0,
+    magy: 0,
+    magz: 0,
+    gyrox: 0,
+    gyroy: 0,
+    gyroz: 0,
+    lacclx: 0,
+    laccly: 0,
+    lacclz: 0,
+    gravx: 0,
+    gravy: 0,
+    gravz: 0
   };
 var statusdata = {};
 var settingsCollection = {
@@ -93,6 +108,53 @@ var OpenROVController = function (eventLoop) {
     if ('fthr' in status) {
       navdata.thrust = status.fthr;
     }
+    // BNO055 values
+    if ('acclx' in status) {
+        navdata.acclx = status.acclx;
+    }
+    if ('accly' in status) {
+        navdata.accly = status.accly;
+    }
+    if ('acclz' in status) {
+        navdata.acclz = status.acclz;
+    }
+    if ('magx' in status) {
+        navdata.magx = status.magx;
+    }
+    if ('magy' in status) {
+        navdata.magy = status.magy;
+    }
+    if ('magz' in status) {
+        navdata.magz = status.magz;
+    }
+    if ('gyrox' in status) {
+        navdata.gyrox = status.gyrox;
+    }
+    if ('gyroy' in status) {
+        navdata.gyroy = status.gyroy;
+    }
+    if ('gyroz' in status) {
+        navdata.gyroz = status.gyroz;
+    }
+    if ('lacclx' in status) {
+        navdata.lacclx = status.lacclx;
+    }
+    if ('laccly' in status) {
+        navdata.laccly = status.laccly;
+    }
+    if ('lacclz' in status) {
+        navdata.lacclz = status.lacclz;
+    }
+    if ('gravx' in status) {
+        navdata.gravx = status.gravx;
+    }
+    if ('gravy' in status) {
+        navdata.gravy = status.gravy;
+    }
+    if ('gravz' in status) {
+        navdata.gravz = status.gravz;
+    }
+    // end of BNO055 values
     if ('mtrmod' in status){
 	console.log('mtrmod: ' + status.mtrmod);
     }
