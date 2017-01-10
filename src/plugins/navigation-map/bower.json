@@ -1,0 +1,11 @@
+{
+  "name": "openrov-plugin-navigation-map",
+  "description": "This plugin plots the movement of the ROV and shows the path in the cockpit.",
+  "version": "0.0.1",
+  "homepage": "",
+  "main": "lib/navigation-map",
+  "keywords": [
+    "openrov",
+    "plugin"
+  ]
+}
