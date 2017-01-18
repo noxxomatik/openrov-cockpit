@@ -20,40 +20,53 @@
             alert('navigation-map disabled');
         };
 
+        // load external scripts dynamically
+        $.getScript("latlon-ellipsoidal.js", function(){console.log("latlon-ellipsoidal.js loaded");});
+        $.getScript("latlon-vincenty.js", function(){console.log("latlon-vincenty.js loaded");});
+        $.getScript("OBJLoader.js", function(){console.log("OBJLoader.js loaded");});
+        $.getScript("three.js", function(){console.log("three.js loaded");});
+        $.getScript("vector3d.js", function(){console.log("vector3d.js loaded");});
+        $.getScript("navigation-map-calculation.js", function(){console.log("navigation-map-calculation.js loaded");});
+        $.getScript("navigation-map-visualization.js", function(){console.log("navigation-map-visualization.js loaded");});
+
+        // prepare the renderer
+        $("#mainContent").prepend("<div id='navigation-map-renderer'>" +
+            "<label class='menu-item'>lat:<input id='lat' value='51.037669'/></label>" +
+            "<label class='menu-item'>lon:<input id='lon' value='13.735245'/></label>" +
+            "<button class='menu-item' id='start-tracking'>Start tracking</button>" +
+            "</div>");
+
+        // on click start tracking: initialize the navigation map lib
+        var trackingStarted = false;
+        var navMapVis;
+        var navMapCalc;
+        var startLat;
+        var startLon;
+        $("#start-tracking").click(function(){
+            startLat = $("#lat").val();
+            startLon = $("#lon").val();
+            $("#navigation-map-renderer").empty();
+            // create the visualization
+            navMapVis = new NavMapVis();
+            // create the calculation with a selected GPS/INS integration method
+            navMapCalc = new NavMapCalc(new NoFilter());
+            // init the visualization
+            navMapVis.init("#navigation-map-renderer");
+            navMapVis.animate();
+
+            navMapVis.addBuoyPosition(navMapCalc.calculateNextBuoyPosition(startLat, startLon, 1));
+        });
+
         var self = this;
 
         // react on new navigation data
         this.cockpit.on('plugin.navigationData.data', function (navdata) {
-            if ($("#navigation-data").length < 1) {
-                $("#mainContent").prepend(
-                    "<div id='navigation-data' class='alert alert-info' role='alert' "
-                    + "style='display: inline-block; position: absolute; z-index: 10; font-size: x-small'>"
-                    + "</div>"
-                );
+            if (trackingStarted) {
+                // add the new navdata to the map
+                var pose = navMapVis.addROVPose(navMapCalc.calculateNextPose(navdata));
+                // calculate the next GPS coordinates
+                navMapCalc.integrationMethod.calculateNextBuoyCoordinates(pose);
             }
-            $("#navigation-data").html(
-                "Heading " + navdata.heading + "<br/>"
-                + "Depth " + navdata.deapth + "<br/>"
-                + "Pitch " + navdata.pitch + "<br/>"
-                + "Roll " + navdata.roll + "<br/>"
-                + "Yaw " + navdata.yaw + "<br/>"
-                + "Thrust " + navdata.thrust + "<br/>"
-                + "AccX " + navdata.acclx + "<br/>"
-                + "AccY " + navdata.accly + "<br/>"
-                + "AccZ " + navdata.acclz + "<br/>"
-                + "MagX " + navdata.magx + "<br/>"
-                + "MagY " + navdata.magy + "<br/>"
-                + "MagZ " + navdata.magz + "<br/>"
-                + "GyroX " + navdata.gyrox + "<br/>"
-                + "GyroY " + navdata.gyroy + "<br/>"
-                + "GyroZ " + navdata.gyroz + "<br/>"
-                + "LAcclX " + navdata.lacclx + "<br/>"
-                + "LAcclY " + navdata.laccly + "<br/>"
-                + "LAcclZ " + navdata.lacclz + "<br/>"
-                + "GravX " + navdata.gravx + "<br/>"
-                + "GravY " + navdata.gravy + "<br/>"
-                + "GravZ " + navdata.gravz + "<br/>"
-            );
         });
     };
 

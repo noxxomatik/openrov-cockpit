@@ -1,1 +1,13 @@
+#navigation-map-renderer {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+}
+.menu-item {
+    margin: 5px 0px;
+    float: left;
+    width: 160px;
+}
 

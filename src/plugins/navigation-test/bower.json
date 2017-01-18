@@ -1,0 +1,11 @@
+{
+  "name": "openrov-plugin-navigation-test",
+  "description": "This plugin reads the navdata object and displays its values.",
+  "version": "0.0.1",
+  "homepage": "",
+  "main": "lib/navigation-test",
+  "keywords": [
+    "openrov",
+    "plugin"
+  ]
+}
