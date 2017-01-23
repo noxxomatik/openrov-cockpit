@@ -14,23 +14,23 @@
         this.viewName = 'navigation-map plugin'; // for the UI
         this.canBeDisabled = true; //allow enable/disable
         this.enable = function () {
-            alert('navigation-map enabled');
+            console.log('navigation-map enabled');
         };
         this.disable = function () {
-            alert('navigation-map disabled');
+            console.log('navigation-map disabled');
         };
 
         // load external scripts dynamically
-        $.getScript("latlon-ellipsoidal.js", function(){console.log("latlon-ellipsoidal.js loaded");});
-        $.getScript("latlon-vincenty.js", function(){console.log("latlon-vincenty.js loaded");});
-        $.getScript("OBJLoader.js", function(){console.log("OBJLoader.js loaded");});
-        $.getScript("three.js", function(){console.log("three.js loaded");});
-        $.getScript("vector3d.js", function(){console.log("vector3d.js loaded");});
-        $.getScript("navigation-map-calculation.js", function(){console.log("navigation-map-calculation.js loaded");});
-        $.getScript("navigation-map-visualization.js", function(){console.log("navigation-map-visualization.js loaded");});
+        $.getScript("plugin/navigation-map/js/latlon-ellipsoidal.js", function(){console.log("latlon-ellipsoidal.js loaded");});
+        $.getScript("plugin/navigation-map/js/latlon-vincenty.js", function(){console.log("latlon-vincenty.js loaded");});
+        $.getScript("plugin/navigation-map/js/OBJLoader.js", function(){console.log("OBJLoader.js loaded");});
+        $.getScript("plugin/navigation-map/js/three.js", function(){console.log("three.js loaded");});
+        $.getScript("plugin/navigation-map/js/vector3d.js", function(){console.log("vector3d.js loaded");});
+        $.getScript("plugin/navigation-map/js/navigation-map-calculation.js", function(){console.log("navigation-map-calculation.js loaded");});
+        $.getScript("plugin/navigation-map/js/navigation-map-visualization.js", function(){console.log("navigation-map-visualization.js loaded");});
 
         // prepare the renderer
-        $("#mainContent").prepend("<div id='navigation-map-renderer'>" +
+        $("#main-row").prepend("<div id='navigation-map-renderer'>" +
             "<label class='menu-item'>lat:<input id='lat' value='51.037669'/></label>" +
             "<label class='menu-item'>lon:<input id='lon' value='13.735245'/></label>" +
             "<button class='menu-item' id='start-tracking'>Start tracking</button>" +
@@ -60,7 +60,7 @@
         var self = this;
 
         // react on new navigation data
-        this.cockpit.on('plugin.navigationData.data', function (navdata) {
+        this.cockpit.socket.on('navdata', function (navdata) {
             if (trackingStarted) {
                 // add the new navdata to the map
                 var pose = navMapVis.addROVPose(navMapCalc.calculateNextPose(navdata));

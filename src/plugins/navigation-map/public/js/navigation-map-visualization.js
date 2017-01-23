@@ -61,7 +61,7 @@ function NavMapVis() {
         $(rendererSelector).append(renderer.domElement);
 
         // append north
-        $(rendererSelector).append("<img src='res/north.svg' width='30px' style='position: absolute; top: 4px; right: 4px'/>");
+        $(rendererSelector).append("<img src='plugin/navigation-map/css/north.svg' width='30px' style='position: absolute; top: 4px; right: 4px'/>");
     };
 
     this.animate = function() {
@@ -163,7 +163,7 @@ function NavMapVis() {
     // create the ROV representation
     this.createROV = function() {
         var loader = new THREE.OBJLoader();
-        loader.load("models/rov.obj", function(object){
+        loader.load("plugin/navigation-map/css/rov.obj", function(object){
             object.children[0].material = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
             object.castShadow = false;
             rovMesh = object.children[0];

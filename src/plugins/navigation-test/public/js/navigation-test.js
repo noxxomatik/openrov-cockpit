@@ -14,18 +14,18 @@
         this.viewName = 'navigation-test plugin'; // for the UI
         this.canBeDisabled = true; //allow enable/disable
         this.enable = function () {
-            alert('navigation-test enabled');
+            console.log('navigation-test enabled');
         };
         this.disable = function () {
-            alert('navigation-test disabled');
+            console.log('navigation-test disabled');
         };
 
         var self = this;
 
         // react on new navigation data
-        this.cockpit.on('plugin.navigationData.data', function (navdata) {
+        this.cockpit.socket.on('navdata', function (navdata) {
             if ($("#navigation-data").length < 1) {
-                $("#mainContent").prepend(
+                $("#main-row").prepend(
                     "<div id='navigation-data' class='alert alert-info' role='alert' "
                     + "style='display: inline-block; position: absolute; z-index: 10; font-size: x-small'>"
                     + "</div>"
