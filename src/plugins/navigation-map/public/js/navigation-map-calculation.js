@@ -1,30 +1,46 @@
 /**
- * Created by Sven Otte on 02.01.2017.
+ * All required calculation objects of the navigation-map-lib framework.
+ * @author Sven Otte
+ * @module navigation-map-calculation
  */
 
-// calculated pose of the ROV
+/**
+ * This object represents the calculated pose of the ROV
+ * @constructor
+ */
 function Pose() {
-    // position in world space of visualization
+    /** Position x in world space of visualization.*/
     this.x;
+    /** Position y in world space of visualization.*/
     this.y;
+    /** Position z in world space of visualization.*/
     this.z;
-    // depth for accuracy checks
+    /** Depth of ROV for accuracy checks.*/
     this.depth;
-    // orientation from navdata
-    this.roll;  // roll around x-axis in radians
-    this.pitch; // pitch around y-axis in radians
-    this.yaw;   // yaw around z-axis in radians
-    // calculated translation along the axis
+    /** Roll around the x-axis in radians.*/
+    this.roll;
+    /** Pitch around the y-axis in radians.*/
+    this.pitch;
+    /** Yaw around the z-axis in radians.*/
+    this.yaw;
+    /** Calculated translation along the x-axis.*/
     this.transX;
+    /** Calculated translation along the y-axis.*/
     this.transY;
+    /** Calculated translation along the z-axis.*/
     this.transZ;
-    // calculated velocity
+    /** Calculated velocity along the x-axis.*/
     this.veloX;
+    /** Calculated velocity along the y-axis.*/
     this.veloY;
+    /** Calculated velocity along the z-axis.*/
     this.veloZ;
-    // timestamp
+    /** timestamp of measured values.*/
     this.timestamp;
-    // clone function
+    /**
+     * Clones the object.
+     * @returns {Pose} The cloned ROV pose object.
+     */
     this.clone = function() {
         var pose = new Pose();
         pose.x = this.x;
@@ -45,14 +61,39 @@ function Pose() {
     }
 }
 
-// OpenROV navdata object
-function Navdata(roll, pitch, yaw, thrust, depth, heading, acclx, accly, acclz, magx, magy, magz, gyrox, gyroy, gyroz, lacclx, laccly, lacclz, gravx, gravy, gravz, timestamp) {
+/**
+ * This object represents all measured sensor data at a current timestamp.
+ * @param roll
+ * @param pitch
+ * @param yaw
+ * @param thrust
+ * @param depth
+ * @param hdgd
+ * @param acclx
+ * @param accly
+ * @param acclz
+ * @param magx
+ * @param magy
+ * @param magz
+ * @param gyrox
+ * @param gyroy
+ * @param gyroz
+ * @param lacclx
+ * @param laccly
+ * @param lacclz
+ * @param gravx
+ * @param gravy
+ * @param gravz
+ * @param timestamp
+ * @constructor
+ */
+function Navdata(roll, pitch, yaw, thrust, depth, hdgd, acclx, accly, acclz, magx, magy, magz, gyrox, gyroy, gyroz, lacclx, laccly, lacclz, gravx, gravy, gravz, timestamp) {
     this.roll = roll;
     this.pitch = pitch;
     this.yaw = yaw;
     this.thrust = thrust;
     this.depth = depth;
-    this.heading = heading;
+    this.hdgd = hdgd;
     this.acclx = acclx;
     this.accly = accly;
     this.acclz = acclz;
@@ -71,14 +112,23 @@ function Navdata(roll, pitch, yaw, thrust, depth, heading, acclx, accly, acclz, 
     this.timestamp = timestamp
 }
 
-// buoy position
+/**
+ * This object represents the calculated or measured buoy position.
+ * @constructor
+ */
 function Buoy() {
+    /**
+     * The coordinates of the buoy in latitude and longitude.
+     */
     this.coordinates = {
         lat: null,
         lon: null,
         // accuracy of signal in meters
         accuracy: null
     };
+    /**
+     * The position of the buoy in the visualisation.
+     */
     this.position = {
         x: null,
         y: null,
@@ -87,6 +137,10 @@ function Buoy() {
         // bearing in radians (counterclockwise from north)
         bearing: null
     };
+    /**
+     * Clones the object.
+     * @returns {Buoy} Cloned buoy object.
+     */
     this.clone = function() {
         var buoy = new Buoy();
         buoy.coordinates.lat = this.coordinates.lat;
@@ -100,21 +154,58 @@ function Buoy() {
     }
 }
 
+/**
+ * Gathers all available sensor data and calculates the pose of the ROV.
+ * @param integrationMethod - The chosen integration method to calculate the pose.
+ * @constructor
+ */
 function NavMapCalc(integrationMethod) {
+    /**
+     * The chosen integration method. Default is NoFilter.
+     */
     this.integrationMethod = integrationMethod != undefined ? integrationMethod : new NoFilter(false, null, null);
+    /**
+     * Calculates the next ROV pose.
+     */
     this.calculateNextPose = this.integrationMethod.calculateNextPose;
+    /**
+     * Calculates the next buoy position.
+     */
     this.calculateNextBuoyPosition = this.integrationMethod.calculateNextBuoyPosition;
 }
 
 /* filter for GPS/INS integration */
-// no filter (default)
+/**
+ * Default integration method with unfiltered sensor values. Can be used as template for other integration methods.
+ * @constructor
+ */
 function NoFilter() {
+    /**
+     * Last calculated pose.
+     * @type {Pose}
+     */
     var pose = new Pose();
+    /**
+     * All past navdata objects.
+     * @type {Array}
+     */
     var dataHistory = [];
+    /**
+     * Last buoy position.
+     * @type {Buoy}
+     */
     var buoy = new Buoy();
+    /**
+     * All past buoy positions.
+     * @type {Array}
+     */
     var buoyHistory = [];
 
-    // calculate the next pose from navdata
+    /**
+     * Calculates the next ROV pose from the gathered sensor data.
+     * @param {Navdata} navdata - The navdata object from the event loop.
+     * @param callback - Callback function.
+     */
     this.calculateNextPose = function(navdata, callback) {
         var newPose = new Pose();
 
@@ -163,7 +254,7 @@ function NoFilter() {
             // translation ((a * Math.pow(t)) / 2 + vo * t)
             newPose.transX = (navdata.lacclx * Math.pow(t, 2)) / 2 + oldPose.veloX * t;
             newPose.transY = (navdata.laccly * Math.pow(t, 2)) / 2 + oldPose.veloY * t;
-            newPose.transZ = (navdata.lacclz * Math.pow(t, 2)) / 2 + oldPose.veloZ * t;
+            newPose.transZ = -((navdata.lacclz * Math.pow(t, 2)) / 2 + oldPose.veloZ * t); // z is facing down
 
             // velocity (a * t + v0)
             newPose.veloX = navdata.lacclx * t + oldPose.veloX;
@@ -176,7 +267,14 @@ function NoFilter() {
         return newPose.clone();
     };
 
-    // calculates the next buoy position from coordinates
+    /**
+     * Calculates the next buoy position from given coordinates.
+     * @param lat - Latitude.
+     * @param lon - Longitude.
+     * @param accuracy - Accuracy of GPS receiver.
+     * @param callback - Callback function.
+     * @returns {Buoy} Calculated buoy position.
+     */
     this.calculateNextBuoyPosition = function(lat, lon, accuracy, callback) {
         // first position
         if (buoyHistory.length < 1) {
@@ -204,7 +302,11 @@ function NoFilter() {
         return buoy.clone();
     };
 
-    // calculate the next virtual buoy coordinates from the ROV pose
+    /**
+     * Calculates virtual buoy coordinates from last known coordinates, ROV pose, bearing and travelled distance.
+     * Saves the new buoy object to the history.
+     * @param {Pose} pose - Current ROV pose.
+     */
     this.calculateNextBuoyCoordinates = function(pose) {
         var distance = Math.sqrt(Math.pow(pose.x, 2) + Math.pow(pose.y, 2));
         var bearing = pose.yaw;
@@ -217,6 +319,10 @@ function NoFilter() {
         buoyHistory.push(buoy.clone());
     };
 
+    /**
+     * Returns the complete history of gathered buoy positions.
+     * @returns {Array} All gathered buoy positions.
+     */
     this.getBuoyHistory = function() {
         return buoyHistory;
     };

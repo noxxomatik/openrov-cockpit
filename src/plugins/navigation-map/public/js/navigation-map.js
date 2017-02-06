@@ -33,26 +33,40 @@
         $("#main-row").prepend("<div id='navigation-map-renderer'>" +
             "<label class='menu-item'>lat:<input id='lat' value='51.037669'/></label>" +
             "<label class='menu-item'>lon:<input id='lon' value='13.735245'/></label>" +
+            "<label class='menu-item'>" +
+            "<input id='orientation-mode' type='checkbox'/>Show only absolute orientation" +
+            "</label>" +
             "<button class='menu-item' id='start-tracking'>Start tracking</button>" +
             "</div>");
 
         // on click start tracking: initialize the navigation map lib
         var trackingStarted = false;
+        var orientationMode = false;
         var navMapVis;
         var navMapCalc;
         var startLat;
         var startLon;
+
+        // option: orientation mode
+        $("#orientation-mode").change(function() {
+            if ($("#orientation-mode").prop("checked")) {
+                orientationMode = true;
+            }
+            else {
+                orientationMode = false;
+            }
+        });
+
         $("#start-tracking").click(function(){
             startLat = $("#lat").val();
             startLon = $("#lon").val();
             $("#navigation-map-renderer").empty();
             // create the visualization
-            navMapVis = new NavMapVis();
+            navMapVis = new NavMapVis(orientationMode);
             // create the calculation with a selected GPS/INS integration method
             navMapCalc = new NavMapCalc(new NoFilter());
             // init the visualization
             navMapVis.init("#navigation-map-renderer");
-            navMapVis.animate();
 
             navMapVis.addBuoyPosition(navMapCalc.calculateNextBuoyPosition(startLat, startLon, 1));
         });

@@ -1,13 +1,23 @@
 /**
- * Created by Sven Otte on 02.01.2017.
+ * Visualization of ROV pose and buoy position on a map.
+ *
+ * @author Sven Otte
+ * @module navigation-map-visualization
  */
-function NavMapVis() {
+
+/**
+ * Continuously visualizes the current ROV pose and buoy position on a map.
+ * @param {boolean} useOrientationMode - Whether or not to show only the absolute orientation of the ROV.
+ * @constructor
+ */
+function NavMapVis(useOrientationMode) {
     var scene;
     var camera;
     var renderer;
     var poseHistory = [];
     var buoyHistory = [];
-    var zoom = 1;
+    var cameraDistance = 5;
+    var renderFunction;
 
     // ROV representation
     var rovMesh;
@@ -16,6 +26,13 @@ function NavMapVis() {
     // buoy representation
     var buoyObject;
 
+    // orientation mode
+    var useOrientationMode = useOrientationMode;
+
+    /**
+     * Initialize the render scene with all helper objects.
+     * @param {string} rendererSelector - The id of the DOM-element on which the renderer is appended.
+     */
     this.init = function(rendererSelector) {
         // scene dimensions
         var width = $(rendererSelector).width();
@@ -24,21 +41,24 @@ function NavMapVis() {
 
         // scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(1, 1, 1);
-        this.createWater();
+        //scene.background = new THREE.Color(1, 1, 1);
+        //this.createWater();
         this.createROV();
 
         // camera
-        camera = new THREE.PerspectiveCamera(75, width / height, 1, 10000);
-        camera.position.z = 50;
-        camera.position.x = -50;
-        camera.rotation.z = - 1 / 2 * Math.PI;
-        camera.rotation.y =  - 1 / 4 * Math.PI;
-        //camera.lookAt(new THREE.Vector3(0, 0, 0));
+        camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+        if (!useOrientationMode) {
+            camera.position.z = cameraDistance;
+            camera.position.y = -cameraDistance;
+            camera.rotation.x =  1 / 4 * Math.PI;
+        }
+        else {
+            camera.rotation.x =  1 / 2 * Math.PI;
+        }
 
         // light
         var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-        directionalLight.position.set( 0, 1, 1 );
+        directionalLight.position.set( -1, 0, 2 ); // target by default is (0,0,0)
         scene.add( directionalLight );
 
         var light = new THREE.AmbientLight( 0x404040 ); // soft white light
@@ -53,22 +73,53 @@ function NavMapVis() {
         gridHelper.rotation.x = 1 / 2 * Math.PI;
         scene.add( gridHelper );
 
+        // axis helper
+        /*var axisHelper = new THREE.AxisHelper( 5 );
+        scene.add( axisHelper );*/
+
         // compilation
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({alpha: true}); // transparent background
+        renderer.setClearColor( 0x000000, 0 );
         renderer.setSize(width, height);
 
         // append renderer
         $(rendererSelector).append(renderer.domElement);
 
         // append north
-        $(rendererSelector).append("<img src='plugin/navigation-map/css/north.svg' width='30px' style='position: absolute; top: 4px; right: 4px'/>");
+        $(rendererSelector).append("<img src='res/north.svg' width='30px' style='position: absolute; top: 4px; right: 4px'/>");
+
+        renderFunction = this.render;
+        this.render();
     };
 
-    this.animate = function() {
+    /**
+     * Start render loop.
+     * @private
+     */
+    this.render = function() {
+        requestAnimationFrame( renderFunction );
+
+        // camera follows the ROV
+        if (rovObject != undefined) {
+            var position = rovObject.getWorldPosition();
+            if (!useOrientationMode) {
+                camera.matrix.setPosition(new THREE.Vector3(position.x, position.y - cameraDistance, position.z + cameraDistance));
+            }
+            else {
+                camera.matrix.setPosition(new THREE.Vector3(position.x, position.y - cameraDistance, position.z));
+            }
+            camera.matrixAutoUpdate = false;
+            camera.getWorldPosition(); // updates the camera position (updateMatrix doesn't work)
+        }
+
         renderer.render(scene, camera);
     };
 
-    // adds the current ROV pose to the scene
+    /**
+     * Adds a current ROV pose to the scene. The pose gets updated with the position in world space of the visualization.
+     * @param {Pose} pose - The pose which shall be added.
+     * @returns {Pose} The updated pose.
+     */
     this.addROVPose = function(pose) {
         // initialize the ROV object at the center
         if (poseHistory.length < 1) {
@@ -82,7 +133,7 @@ function NavMapVis() {
         rovObject.translateX(pose.transX);
         rovObject.translateY(pose.transY);
         rovObject.translateZ(pose.transZ);
-        //rovObject.matrixAutoUpdate = false;
+        rovObject.updateMatrix();
 
         // save new position to history
         var position = rovObject.getWorldPosition();
@@ -96,24 +147,23 @@ function NavMapVis() {
         savePose.yaw = pose.yaw;
         poseHistory.push(savePose);
 
-        // camera follows the ROV
-        var cameraPosition = camera.getWorldPosition();
-        camera.matrix.setPosition(new THREE.Vector3(position.x - 50, position.y, cameraPosition.z));
-        camera.matrixAutoUpdate = false;
-
         // create a ghost pose of the last pose
         if (poseHistory.length > 1) {
             var ghostPose = poseHistory[poseHistory.length - 2];
-            this.createGhostROV(ghostPose);
+            if(!useOrientationMode){
+                this.createGhostROV(ghostPose);
+            }
             // draw a line to new pose
             this.drawConnection(ghostPose, savePose, new THREE.Color(1, 1, 0));
         }
 
-        renderer.render(scene, camera);
         return savePose.clone();
     };
 
-    // adds the current buoy position to the scene
+    /**
+     * Adds a current buoy position to the scene.
+     * @param {Buoy} buoy - The buoy position which shall be added.
+     */
     this.addBuoyPosition = function(buoy) {
         // initialize the buoy
         if (buoyHistory.length < 1) {
@@ -122,7 +172,7 @@ function NavMapVis() {
 
         // set the buoy to the new position
         if (buoy.position.x != null && buoy.position.y != null) {
-            buoyObject.matrix.setPosition(new THREE.Vector3(buoy.position.x, buoy.position.y, 0.1));
+            buoyObject.matrix.setPosition(new THREE.Vector3(buoy.position.x, buoy.position.y, 0.01));
         }
         // use bearing and distance
         else {
@@ -146,11 +196,13 @@ function NavMapVis() {
         if (typeof callback === "function") {
             callback(saveBuoy.clone());
         }
-        renderer.render(scene, camera);
         return saveBuoy.clone();
     };
 
-    // create the water surface
+    /**
+     * Creates the water surface.
+     * @private
+     */
     this.createWater = function() {
         var waterGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
         var waterMaterial = new THREE.MeshBasicMaterial({
@@ -160,18 +212,34 @@ function NavMapVis() {
         scene.add(water);
     };
 
-    // create the ROV representation
+    /**
+     * Loads and creates the ROV representation.
+     * @private
+     */
     this.createROV = function() {
         var loader = new THREE.OBJLoader();
-        loader.load("plugin/navigation-map/css/rov.obj", function(object){
-            object.children[0].material = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
-            object.castShadow = false;
-            rovMesh = object.children[0];
-            rovObject = object;
-        });
+        if (!useOrientationMode) {
+            loader.load("plugin/navigation-map/css/dummyrov.obj", function (object) {
+                object.children[0].material = new THREE.MeshPhongMaterial({color: 0xff0000});
+                object.castShadow = false;
+                rovMesh = object.children[0];
+                rovObject = object;
+            });
+        }
+        else {
+            loader.load("plugin/navigation-map/css/openrov.obj", function (object) {
+                object.children[0].material = new THREE.MeshPhongMaterial({color: 0xff0000});
+                object.castShadow = false;
+                rovMesh = object.children[0];
+                rovObject = object;
+            });
+        }
     };
 
-    // create a ghost ROV pose
+    /**
+     * Creates a ghost ROV pose on the map.
+     * @param {Pose} pose - The pose at which the ghost shall be created.
+     */
     this.createGhostROV = function(pose) {
         var ghostMaterial = new THREE.MeshPhongMaterial({color: 0xffff00, transparent: true, opacity: 0.2});
         var ghost = new THREE.Mesh(rovMesh.geometry.clone(), ghostMaterial);
@@ -183,7 +251,13 @@ function NavMapVis() {
         scene.add(ghost);
     };
 
-    // create a connecting line between two poses
+    /**
+     * Creates a connecting line between two poses.
+     * @param {Pose} startPose - Pose where the line starts.
+     * @param {Pose} targetPose - Pose where the line ends.
+     * @param {THREE.Color} color - Color of the line.
+     * @private
+     */
     this.drawConnection = function(startPose, targetPose, color) {
         var lineMaterial = new THREE.LineBasicMaterial({color: color.getHex()});
         var lineGeometry = new THREE.Geometry();
@@ -193,39 +267,43 @@ function NavMapVis() {
         scene.add(line);
     };
 
-    // create the buoy representation
+    /**
+     * Creates a buoy representation on the map.
+     * @param {Buoy} buoy - Buoy position where the representation shall be added.
+     */
     this.createBuoy = function(buoy){
         var buoyMaterial = new THREE.MeshPhongMaterial({color: 0x00ff00, transparent: true, opacity: 0.5});
-        var buoyGeometry = new THREE.CircleBufferGeometry(buoy.coordinates.accuracy);
+        var buoyGeometry = new THREE.CircleBufferGeometry(buoy.coordinates.accuracy, 16);
         buoyObject = new THREE.Mesh(buoyGeometry, buoyMaterial);
         buoyObject.castShadow = false;
         buoyObject.matrixAutoUpdate = false;
         scene.add(buoyObject);
     };
 
-    // create a ghost buoy
+    /**
+     * Creates a ghost buoy representation on the map.
+     * @param {Buoy} buoy - Buoy position where the ghost representation shall be added.
+     */
     this.createGhostBuoy = function(buoy){
         var buoyMaterial = new THREE.MeshPhongMaterial({color: 0x00ff00, transparent: true, opacity: 0.2});
-        var buoyGeometry = new THREE.CircleBufferGeometry(buoy.coordinates.accuracy);
+        var buoyGeometry = new THREE.CircleBufferGeometry(buoy.coordinates.accuracy, 16);
         buoyObject = new THREE.Mesh(buoyGeometry, buoyMaterial);
         buoyObject.castShadow = false;
         buoyObject.matrixAutoUpdate = false;
         scene.add(buoyObject);
     };
 
-    // camera zoom in
+    /**
+     * Lets the camera zoom into the map.
+     */
     this.zoomIn = function() {
-        zoom += 0.1;
-        camera.zoom = zoom;
-        camera.updateProjectionMatrix();
-        renderer.render(scene, camera);
+        cameraDistance -= 0.1;
     };
 
-    // camera zoom out
+    /**
+     * Lets the camera zoom out of the map.
+     */
     this.zoomOut = function() {
-        zoom -= 0.1;
-        camera.zoom = zoom;
-        camera.updateProjectionMatrix();
-        renderer.render(scene, camera);
+        cameraDistance += 0.1;
     };
 }
